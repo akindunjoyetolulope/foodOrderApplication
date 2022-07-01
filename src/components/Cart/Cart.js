@@ -4,12 +4,16 @@ import CartItem from "./CartItem";
 import Modal from "../UI/Modal";
 import classes from "./Cart.module.css";
 import Checkout from "./Checkout";
+import useHttp from "../../hooks/use-http";
 
 const Cart = (props) => {
+
   const cartCtx = useContext(CartContext);
   const [isCheckout, setIsCheckOut] = useState(false);
   const totalAmount = `$${cartCtx.totalAmount.toFixed(2)}`;
   const itHasItem = cartCtx.items.length > 0;
+
+  const { isPending, isErr, sendReq } = useHttp();
 
   const cartItemRemoveHandler = (id) => {
     cartCtx.removeItem(id);
@@ -22,6 +26,22 @@ const Cart = (props) => {
   const orderHandler = () => {
     setIsCheckOut(true);
   };
+
+  const submitOrderHandler = (userData) => {
+     const config = {
+      url: 'https://addtocart-88ffc-default-rtdb.firebaseio.com/order.json',
+      method: 'POST',
+      body: {
+        user: userData,
+        orderedItem:cartCtx.items
+      }      
+    }
+    const applyData = (data) => {
+      console.log(data)
+    }
+
+    sendReq(config, applyData)
+  }
 
   const cartItems = (
     <ul className={classes["cart-items"]}>
@@ -58,7 +78,7 @@ const Cart = (props) => {
         <span>total Amount</span>
         <span>{totalAmount}</span>
       </div>
-      {isCheckout && <Checkout onCancle={props.onHide}/>}
+      {isCheckout && <Checkout onCancel={props.onHide} submitOrderHandler={submitOrderHandler}/>}
       {!isCheckout && modalAction}
     </Modal>
   );
