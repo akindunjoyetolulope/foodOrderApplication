@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 
 const useHttp = () => {
-  const [ispending, setIsPending] = useState(true);
+  const [isPending, setIsPending] = useState(false);
   const [isErr, setIsErr] = useState(null);
 
   const sendReq = useCallback(async (config, applyData) => {
@@ -20,12 +20,13 @@ const useHttp = () => {
       const data = await response.json();
       applyData(data);
     } catch (err) {
-      setIsErr(err.messge || "something went wrong");
+      setIsPending(false);
+      setIsErr(err.message || "something went wrong");
     }
     setIsPending(false);
   },[]);
 
-  return { ispending, isErr, sendReq };
+  return { isPending, isErr, sendReq };
 };
 
 export default useHttp;
