@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 
+// custom hook for posting and getting data 
 
 const useHttp = () => {
   const [isPending, setIsPending] = useState(false);
