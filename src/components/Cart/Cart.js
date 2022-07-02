@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import CartContext from "../../store/cart-context";
 import CartItem from "./CartItem";
 import Modal from "../UI/Modal";
@@ -6,14 +6,16 @@ import classes from "./Cart.module.css";
 import Checkout from "./Checkout";
 import useHttp from "../../hooks/use-http";
 
-const Cart = (props) => {
 
+const Cart = (props) => {
   const cartCtx = useContext(CartContext);
   const [isCheckout, setIsCheckOut] = useState(false);
+ 
+
   const totalAmount = `$${cartCtx.totalAmount.toFixed(2)}`;
   const itHasItem = cartCtx.items.length > 0;
 
-  const { isPending, isErr, sendReq } = useHttp();
+  const { isPending, sendReq, didSubmit } = useHttp();
 
   const cartItemRemoveHandler = (id) => {
     cartCtx.removeItem(id);
@@ -28,20 +30,20 @@ const Cart = (props) => {
   };
 
   const submitOrderHandler = (userData) => {
-     const config = {
-      url: 'https://addtocart-88ffc-default-rtdb.firebaseio.com/order.json',
-      method: 'POST',
+    const config = {
+      url: "https://addtocart-88ffc-default-rtdb.firebaseio.com/order.json",
+      method: "POST",
       body: {
         user: userData,
-        orderedItem:cartCtx.items
-      }      
-    }
+        orderedItem: cartCtx.items,
+      },
+    };
     const applyData = (data) => {
-      console.log(data)
-    }
+      console.log(data);
+    };
 
-    sendReq(config, applyData)
-  }
+    sendReq(config, applyData);
+  };
 
   const cartItems = (
     <ul className={classes["cart-items"]}>
@@ -71,17 +73,41 @@ const Cart = (props) => {
     </div>
   );
 
-  return (
-    <Modal onHide={props.onHide}>
+  const cartModalContent = (
+    <React.Fragment>
       {cartItems}
       <div className={classes.total}>
         <span>total Amount</span>
         <span>{totalAmount}</span>
       </div>
-      {isCheckout && <Checkout onCancel={props.onHide} submitOrderHandler={submitOrderHandler}/>}
+      {isCheckout && (
+        <Checkout
+          onCancel={props.onHide}
+          submitOrderHandler={submitOrderHandler}
+        />
+      )}
       {!isCheckout && modalAction}
-    </Modal>
+    </React.Fragment>
   );
+
+  const isSubmittingModalContent = <p> Sending Order Data... </p>
+
+  const didSubmitModalContent = <React.Fragment>
+      <p> Successfully Sent The Order! </p>
+    <div className={classes.actions}>
+      <button className={classes.button} onClick={props.onHide}>Close</button>
+    </div>
+  </React.Fragment>
+
+  if(didSubmit){
+    cartCtx.clearCart()
+  }
+
+  return <Modal onHide={props.onHide}>
+    {isPending && !didSubmit && isSubmittingModalContent}
+    {!isPending && !didSubmit && cartModalContent}
+    {!isPending &&  didSubmit && didSubmitModalContent}
+  </Modal>;
 };
 
 export default Cart;
