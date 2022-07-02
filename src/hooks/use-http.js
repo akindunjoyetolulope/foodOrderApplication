@@ -1,7 +1,9 @@
 import { useState, useCallback } from "react";
 
+
 const useHttp = () => {
   const [isPending, setIsPending] = useState(false);
+  const [didSubmit, setdidSubmit] = useState(false);
   const [isErr, setIsErr] = useState(null);
 
   const sendReq = useCallback(async (config, applyData) => {
@@ -24,9 +26,10 @@ const useHttp = () => {
       setIsErr(err.message || "something went wrong");
     }
     setIsPending(false);
+    setdidSubmit(true)
   },[]);
 
-  return { isPending, isErr, sendReq };
+  return { isPending, isErr, sendReq, didSubmit};
 };
 
 export default useHttp;
